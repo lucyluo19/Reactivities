@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Persistence;
 using MediatR;
 using Application.Activities;
+using FluentValidation.AspNetCore;
+using API.Middleware;
 
 namespace API
 {
@@ -34,7 +36,11 @@ namespace API
             });
             //only need to tell one handler as example
             services.AddMediatR(typeof(List.Handler).Assembly);
-            services.AddControllers();
+            // for Fluent Validation
+            services.AddControllers()
+                .AddFluentValidation(cfg => {
+                    cfg.RegisterValidatorsFromAssemblyContaining<Create>();
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,7 +48,8 @@ namespace API
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                app.UseMiddleware<ErrorHandlingMiddleware>();
+                //app.UseDeveloperExceptionPage();
             }
 
             //app.UseHttpsRedirection();
