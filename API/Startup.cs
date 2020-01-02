@@ -18,6 +18,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using AutoMapper;
 
 namespace API
 {
@@ -35,6 +36,8 @@ namespace API
         {
             services.AddDbContext<DataContext>(opt => 
             {
+                // using lazing loadings
+                opt.UseLazyLoadingProxies();
                 opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
             //allow service from different domain using CORS
@@ -45,6 +48,8 @@ namespace API
             });
             //only need to tell one handler as example
             services.AddMediatR(typeof(List.Handler).Assembly);
+            //add service for automapper
+            services.AddAutoMapper(typeof(List.Handler));
             
             services.AddControllers(Opt => {
                 // add authorization policy
@@ -60,6 +65,14 @@ namespace API
             var identityBuilder = new IdentityBuilder(builder.UserType, builder.Services);
             identityBuilder.AddEntityFrameworkStores<DataContext>();
             identityBuilder.AddSignInManager<SignInManager<AppUser>>();
+
+            // for auth policy
+            services.AddAuthorization(opt => {
+                opt.AddPolicy("IsActivityHost", policy => {
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
 
             // hard coded Token key
             //var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("secret key"));
