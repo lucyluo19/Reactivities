@@ -19,6 +19,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using AutoMapper;
+using Infrastructure.Photos;
 
 namespace API
 {
@@ -93,6 +94,9 @@ namespace API
             services.AddScoped<IJwtGenerator, JwtGenerator>();
             // add user accessor to get the username from the token
             services.AddScoped<IUserAccessor, UserAccessor>();
+            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+            //configuration for photo upload
+            services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
 
         }
 
