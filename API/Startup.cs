@@ -20,6 +20,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using AutoMapper;
 using Infrastructure.Photos;
+using API.SignalR;
+using System.Threading.Tasks;
 
 namespace API
 {
@@ -44,14 +46,16 @@ namespace API
             //allow service from different domain using CORS
             services.AddCors(opt => {
                 opt.AddPolicy("CorsPolicy", policy => {
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000").AllowCredentials();
                 });
             });
             //only need to tell one handler as example
             services.AddMediatR(typeof(List.Handler).Assembly);
             //add service for automapper
             services.AddAutoMapper(typeof(List.Handler));
-            
+            //add service for signalR
+            services.AddSignalR();
+
             services.AddControllers(Opt => {
                 // add authorization policy
                 var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
@@ -89,6 +93,19 @@ namespace API
                         ValidateAudience = false,
                         ValidateIssuer = false
                     };
+                    opt.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if(!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chat")))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
             // add JWT    
             services.AddScoped<IJwtGenerator, JwtGenerator>();
@@ -122,6 +139,9 @@ namespace API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                //endpoints config for signalR
+                endpoints.MapHub<ChatHub>("/chat");
+
             });
         }
     }
