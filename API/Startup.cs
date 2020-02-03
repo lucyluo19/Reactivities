@@ -22,6 +22,7 @@ using AutoMapper;
 using Infrastructure.Photos;
 using API.SignalR;
 using System.Threading.Tasks;
+using Application.Profiles;
 
 namespace API
 {
@@ -112,6 +113,7 @@ namespace API
             // add user accessor to get the username from the token
             services.AddScoped<IUserAccessor, UserAccessor>();
             services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+            services.AddScoped<IProfileReader, ProfileReader>();
             //configuration for photo upload
             services.Configure<CloudinarySettings>(Configuration.GetSection("Cloudinary"));
 
