@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { RootStoreContext } from '../../app/stores/rootStore'
 import { Tab, Header, Card, Image, Button, Grid } from 'semantic-ui-react';
-import { PhotoUploadWidget } from '../../app/common/photoUpload/PhotoUploadWidget';
+import PhotoUploadWidget from '../../app/common/photoUpload/PhotoUploadWidget';
 import { observer } from 'mobx-react-lite';
 
 const ProfilePhotos = () => {
